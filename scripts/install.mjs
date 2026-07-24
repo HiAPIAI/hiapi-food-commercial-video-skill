@@ -87,7 +87,7 @@ export function hasLocalChanges(destination) {
     if (status.trim().length > 0) return true;
 
     const localCommits = execFileSync("git", [
-      "-C", destination, "rev-list", "--count", "@{upstream}..HEAD",
+      "-C", destination, "rev-list", "--count", "--all", "--not", "--remotes",
     ], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "ignore"],

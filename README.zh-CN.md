@@ -38,7 +38,7 @@ npx -y github:HiAPIAI/hiapi-food-commercial-video-skill --claude
 npx -y github:HiAPIAI/hiapi-food-commercial-video-skill --target=/path/to/skills
 ```
 
-安装器会先下载并校验新副本，再替换现有的干净安装目录。本地文件、被忽略的配置或输出、未推送提交都会视为本地改动；请先保留这些内容，或显式传入 `--force` 才进行替换。
+安装器会先下载并校验新副本，再替换现有的干净安装目录。本地文件、被忽略的配置或输出、本地分支提交和 stash 都会视为本地改动；请先保留这些内容，或显式传入 `--force` 才进行替换。
 
 OpenClaw：
 

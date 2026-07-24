@@ -72,7 +72,7 @@ test("installer restores the previous copy if the directory swap fails", async (
   }
 });
 
-test("installer protects ignored files and unpushed commits", async () => {
+test("installer protects ignored files, local branches, and stashes", async () => {
   const root = await mkdtemp(join(tmpdir(), "food-commercial-installer-state-"));
   const repository = join(root, "install");
   const remote = join(root, "remote.git");
@@ -101,9 +101,18 @@ test("installer protects ignored files and unpushed commits", async () => {
     assert.equal(hasLocalChanges(repository), true);
     await rm(join(repository, "outputs"), { recursive: true });
 
-    await writeFile(join(repository, "SKILL.md"), "local commit\n", "utf8");
+    execFileSync("git", ["-C", repository, "switch", "-c", "local-work"], { stdio: "ignore" });
+    await writeFile(join(repository, "SKILL.md"), "local branch commit\n", "utf8");
     execFileSync("git", ["-C", repository, "add", "SKILL.md"], { stdio: "ignore" });
     execFileSync("git", ["-C", repository, "commit", "-m", "local"], { stdio: "ignore" });
+    execFileSync("git", ["-C", repository, "switch", "main"], { stdio: "ignore" });
+    assert.equal(hasLocalChanges(repository), true);
+
+    execFileSync("git", ["-C", repository, "branch", "-D", "local-work"], { stdio: "ignore" });
+    assert.equal(hasLocalChanges(repository), false);
+
+    await writeFile(join(repository, "SKILL.md"), "stashed work\n", "utf8");
+    execFileSync("git", ["-C", repository, "stash", "push", "-m", "local"], { stdio: "ignore" });
     assert.equal(hasLocalChanges(repository), true);
   } finally {
     await rm(root, { recursive: true, force: true });

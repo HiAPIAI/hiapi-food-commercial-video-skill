@@ -30,7 +30,7 @@ Do not route spokespersons, reference-motion transfer, source-video editing, mul
 npx -y github:HiAPIAI/hiapi-food-commercial-video-skill -y
 ```
 
-Use `--codex`, `--claude`, `--target=/path`, or `AGENT_SKILLS_DIR=/path` to select the installation directory. The installer refuses to overwrite local files, ignored configuration or outputs, and unpushed commits unless the user explicitly passes `--force`.
+Use `--codex`, `--claude`, `--target=/path`, or `AGENT_SKILLS_DIR=/path` to select the installation directory. The installer refuses to overwrite local files, ignored configuration or outputs, local branch commits, and stashes unless the user explicitly passes `--force`.
 
 Manual Codex install:
 
