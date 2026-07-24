@@ -46,7 +46,7 @@ function mp4Box(type, payload = Buffer.alloc(0)) {
   return box;
 }
 
-test("installer restores the previous copy if the directory swap fails", async () => {
+test("installer restores failed swaps and preserves a concurrently changed copy", async () => {
   const root = await mkdtemp(join(tmpdir(), "food-commercial-installer-"));
   const destination = join(root, "hiapi-food-commercial-video");
   const staging = join(root, ".staging");
@@ -67,6 +67,17 @@ test("installer restores the previous copy if the directory swap fails", async (
     assert.equal(await readFile(join(destination, "new.txt"), "utf8"), "new");
     await assert.rejects(access(oldMarker));
     await assert.rejects(access(backup));
+
+    const nextStaging = join(root, ".next-staging");
+    const protectedBackup = join(root, ".protected-backup");
+    await mkdir(nextStaging);
+    await writeFile(join(nextStaging, "next.txt"), "next", "utf8");
+    assert.equal(
+      replaceInstall(destination, nextStaging, protectedBackup, true),
+      protectedBackup,
+    );
+    assert.equal(await readFile(join(protectedBackup, "new.txt"), "utf8"), "new");
+    assert.equal(await readFile(join(destination, "next.txt"), "utf8"), "next");
   } finally {
     await rm(root, { recursive: true, force: true });
   }

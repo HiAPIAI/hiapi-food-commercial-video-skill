@@ -98,7 +98,7 @@ export function hasLocalChanges(destination) {
   }
 }
 
-export function replaceInstall(destination, staging, backup) {
+export function replaceInstall(destination, staging, backup, protectLocalChanges = false) {
   if (!existsSync(destination)) {
     renameSync(staging, destination);
     return null;
@@ -111,6 +111,8 @@ export function replaceInstall(destination, staging, backup) {
     renameSync(backup, destination);
     throw error;
   }
+
+  if (protectLocalChanges && hasLocalChanges(backup)) return backup;
 
   try {
     rmSync(backup, { recursive: true, force: true });
@@ -138,9 +140,13 @@ function installTo(target) {
       if (!existsSync(join(staging, required))) throw new Error(`Downloaded copy is missing ${required}.`);
     }
 
-    const preservedBackup = replaceInstall(destination, staging, backup);
+    if (existsSync(destination) && hasLocalChanges(destination) && !forceReplace) {
+      throw new Error(`Existing install changed during download: ${destination}. Preserve it or rerun with --force.`);
+    }
+
+    const preservedBackup = replaceInstall(destination, staging, backup, !forceReplace);
     if (preservedBackup) {
-      console.warn(`[${DISPLAY_NAME}] Previous clean install remains at ${preservedBackup}; remove it when convenient.`);
+      console.warn(`[${DISPLAY_NAME}] Previous install remains at ${preservedBackup}; review it before removal.`);
     }
   } catch (error) {
     if (existsSync(staging)) rmSync(staging, { recursive: true, force: true });
