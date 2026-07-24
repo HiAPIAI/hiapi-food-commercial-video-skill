@@ -38,6 +38,8 @@ npx -y github:HiAPIAI/hiapi-food-commercial-video-skill --claude
 npx -y github:HiAPIAI/hiapi-food-commercial-video-skill --target=/path/to/skills
 ```
 
+安装器会先下载并校验新副本，再替换现有的干净安装目录。如果已安装目录包含本地改动，请先保留改动，或显式传入 `--force` 才进行替换。
+
 OpenClaw：
 
 ```bash

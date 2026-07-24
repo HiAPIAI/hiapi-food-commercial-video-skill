@@ -23,7 +23,6 @@ Do not route spokespersons, reference-motion transfer, source-video editing, mul
 - Node.js 18 or newer.
 - `git` on PATH for one-command installation.
 - `HIAPI_API_KEY` only for `--check` and `--spend`.
-- Optional `HIAPI_BASE_URL`; default is `https://api.hiapi.ai`.
 
 ## Install
 
@@ -31,7 +30,7 @@ Do not route spokespersons, reference-motion transfer, source-video editing, mul
 npx -y github:HiAPIAI/hiapi-food-commercial-video-skill -y
 ```
 
-Use `--codex`, `--claude`, `--target=/path`, or `AGENT_SKILLS_DIR=/path` to select the installation directory.
+Use `--codex`, `--claude`, `--target=/path`, or `AGENT_SKILLS_DIR=/path` to select the installation directory. The installer refuses to overwrite local changes unless the user explicitly passes `--force`.
 
 Manual Codex install:
 
@@ -50,7 +49,6 @@ openclaw skills add https://github.com/HiAPIAI/hiapi-food-commercial-video-skill
 
 ```bash
 export HIAPI_API_KEY="your_hiapi_api_key_here"
-export HIAPI_BASE_URL="https://api.hiapi.ai"
 ```
 
 Never print or commit a real API key.
@@ -106,6 +104,6 @@ node scripts/hiapi-food-commercial-video.mjs \
 - HTTP 400: check route, duration, resolution, ratio, media count, and image format.
 - HTTP 429 or transient server errors: wait and retry using the same idempotency key.
 - Estimate above budget: stop and ask the user to shorten the request or approve a different budget.
-- Task timeout: report the task ID and resume it with `--resume-task-id`; do not submit a duplicate paid task.
+- Task timeout: report the task ID and resume it with `--task-id`; do not submit a duplicate paid task.
 
 Run `npm test` after installation when verification is requested. Tests are offline.

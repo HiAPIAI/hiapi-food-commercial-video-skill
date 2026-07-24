@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { access, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
@@ -25,6 +25,7 @@ import {
   uniqueOutputDirectory,
   validateExecutionMode,
 } from "../scripts/hiapi-food-commercial-video.mjs";
+import { replaceInstall } from "../scripts/install.mjs";
 
 function pricingFor(model, unitPrice = 0.1) {
   return {
@@ -43,6 +44,32 @@ function mp4Box(type, payload = Buffer.alloc(0)) {
   payload.copy(box, 8);
   return box;
 }
+
+test("installer restores the previous copy if the directory swap fails", async () => {
+  const root = await mkdtemp(join(tmpdir(), "food-commercial-installer-"));
+  const destination = join(root, "hiapi-food-commercial-video");
+  const staging = join(root, ".staging");
+  const backup = join(root, ".backup");
+  const oldMarker = join(destination, "old.txt");
+
+  try {
+    await mkdir(destination);
+    await writeFile(oldMarker, "old", "utf8");
+
+    assert.throws(() => replaceInstall(destination, staging, backup));
+    assert.equal(await readFile(oldMarker, "utf8"), "old");
+    await assert.rejects(access(backup));
+
+    await mkdir(staging);
+    await writeFile(join(staging, "new.txt"), "new", "utf8");
+    replaceInstall(destination, staging, backup);
+    assert.equal(await readFile(join(destination, "new.txt"), "utf8"), "new");
+    await assert.rejects(access(oldMarker));
+    await assert.rejects(access(backup));
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
 
 function validMp4() {
   const moov = mp4Box("moov", Buffer.concat([
