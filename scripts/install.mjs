@@ -75,14 +75,24 @@ function ensureGit() {
   execFileSync("git", ["--version"], { stdio: "ignore" });
 }
 
-function hasLocalChanges(destination) {
+export function hasLocalChanges(destination) {
   if (!existsSync(join(destination, ".git"))) return true;
   try {
-    const status = execFileSync("git", ["-C", destination, "status", "--porcelain"], {
+    const status = execFileSync("git", [
+      "-C", destination, "status", "--porcelain", "--ignored", "--untracked-files=all",
+    ], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "ignore"],
     });
-    return status.trim().length > 0;
+    if (status.trim().length > 0) return true;
+
+    const localCommits = execFileSync("git", [
+      "-C", destination, "rev-list", "--count", "@{upstream}..HEAD",
+    ], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    });
+    return Number.parseInt(localCommits.trim(), 10) > 0;
   } catch {
     return true;
   }

@@ -38,7 +38,7 @@ npx -y github:HiAPIAI/hiapi-food-commercial-video-skill --claude
 npx -y github:HiAPIAI/hiapi-food-commercial-video-skill --target=/path/to/skills
 ```
 
-The installer downloads and validates a new copy before replacing a clean existing install. If the installed folder has local changes, preserve them or pass `--force` to replace it explicitly.
+The installer downloads and validates a new copy before replacing a clean existing install. It treats local files, ignored configuration or outputs, and unpushed commits as local changes. Preserve them or pass `--force` to replace them explicitly.
 
 OpenClaw:
 

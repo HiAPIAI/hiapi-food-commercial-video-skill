@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import { access, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -25,7 +26,7 @@ import {
   uniqueOutputDirectory,
   validateExecutionMode,
 } from "../scripts/hiapi-food-commercial-video.mjs";
-import { replaceInstall } from "../scripts/install.mjs";
+import { hasLocalChanges, replaceInstall } from "../scripts/install.mjs";
 
 function pricingFor(model, unitPrice = 0.1) {
   return {
@@ -66,6 +67,44 @@ test("installer restores the previous copy if the directory swap fails", async (
     assert.equal(await readFile(join(destination, "new.txt"), "utf8"), "new");
     await assert.rejects(access(oldMarker));
     await assert.rejects(access(backup));
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("installer protects ignored files and unpushed commits", async () => {
+  const root = await mkdtemp(join(tmpdir(), "food-commercial-installer-state-"));
+  const repository = join(root, "install");
+  const remote = join(root, "remote.git");
+
+  try {
+    await mkdir(repository);
+    execFileSync("git", ["init", "--bare", remote], { stdio: "ignore" });
+    execFileSync("git", ["-C", repository, "init", "-b", "main"], { stdio: "ignore" });
+    execFileSync("git", ["-C", repository, "config", "user.name", "Installer Test"], { stdio: "ignore" });
+    execFileSync("git", ["-C", repository, "config", "user.email", "installer@example.com"], { stdio: "ignore" });
+    await writeFile(join(repository, ".gitignore"), ".env\noutputs/\n", "utf8");
+    await writeFile(join(repository, "SKILL.md"), "clean\n", "utf8");
+    execFileSync("git", ["-C", repository, "add", "."], { stdio: "ignore" });
+    execFileSync("git", ["-C", repository, "commit", "-m", "initial"], { stdio: "ignore" });
+    execFileSync("git", ["-C", repository, "remote", "add", "origin", remote], { stdio: "ignore" });
+    execFileSync("git", ["-C", repository, "push", "-u", "origin", "main"], { stdio: "ignore" });
+
+    assert.equal(hasLocalChanges(repository), false);
+
+    await writeFile(join(repository, ".env"), "HIAPI_API_KEY=local\n", "utf8");
+    assert.equal(hasLocalChanges(repository), true);
+    await rm(join(repository, ".env"));
+
+    await mkdir(join(repository, "outputs"));
+    await writeFile(join(repository, "outputs", "result.mp4"), "local output", "utf8");
+    assert.equal(hasLocalChanges(repository), true);
+    await rm(join(repository, "outputs"), { recursive: true });
+
+    await writeFile(join(repository, "SKILL.md"), "local commit\n", "utf8");
+    execFileSync("git", ["-C", repository, "add", "SKILL.md"], { stdio: "ignore" });
+    execFileSync("git", ["-C", repository, "commit", "-m", "local"], { stdio: "ignore" });
+    assert.equal(hasLocalChanges(repository), true);
   } finally {
     await rm(root, { recursive: true, force: true });
   }
