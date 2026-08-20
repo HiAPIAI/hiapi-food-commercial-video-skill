@@ -1,5 +1,9 @@
 # HiAPI Food Commercial Video Skill
 
+> Migration note: this repository remains a compatibility installer for the
+> unified [`hiapi-product-video-skills`](https://github.com/HiAPIAI/hiapi-product-video-skills)
+> monorepo. The historical `npx github:` command and install folder are kept.
+
 Create short, single-shot coffee, beverage, restaurant, food, and ecommerce commercials through HiAPI.
 
 [Get API Key](https://www.hiapi.ai/en/dashboard/api-keys) | [Pricing](https://www.hiapi.ai/en/pricing) | [HiAPI Docs](https://docs.hiapi.ai) | [All HiAPI Skills](https://github.com/HiAPIAI/hiapi-skills)
